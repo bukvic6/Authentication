@@ -59,3 +59,8 @@ func CreateJwt(email string, password string) (string, error) {
 	return tokenString, nil
 
 }
+
+func Home(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte(fmt.Sprintf("Hello")))
+
+}

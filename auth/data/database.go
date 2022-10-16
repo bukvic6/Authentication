@@ -10,10 +10,10 @@ import (
 
 // https://stackoverflow.com/questions/40326540/how-to-assign-default-value-if-env-var-is-empty
 var (
-	DB_NAME  = getEnv("databaseName", "auth")
+	DB_NAME  = getEnv("databaseName", "authdatabase")
 	DB_HOST  = getEnv("databaseHost", "localhost")
-	USERNAME = getEnv("username", "authdatabase")
-	PASSWORD = getEnv("password", "authdatabase")
+	USERNAME = getEnv("username", "postgres")
+	PASSWORD = getEnv("password", "postgres")
 )
 
 func getEnv(key, fallback string) string {

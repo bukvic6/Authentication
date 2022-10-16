@@ -3,7 +3,6 @@ package main
 import (
 	"Microservices/auth/handlers"
 	"Microservices/auth/middleware"
-	"Microservices/homehandlers"
 	"context"
 	"github.com/gorilla/mux"
 	"log"
@@ -15,14 +14,16 @@ import (
 )
 
 func main() {
+	l := log.New(os.Stdout, "product-api", log.LstdFlags)
+
 	r := mux.NewRouter()
 	s := r.Methods(http.MethodPost).Subrouter()
 	s.HandleFunc("/login", handlers.Login)
-	l := log.New(os.Stdout, "product-api", log.LstdFlags)
-	ph := homehandlers.NewProducts(l)
+	//l := log.New(os.Stdout, "product-api", log.LstdFlags)
+	//ph := homehandlers.NewProducts(l)
 
-	m := r.PathPrefix("auth").Subrouter()
-	m.HandleFunc("/", ph.GetProducts).Methods(http.MethodGet)
+	m := r.Methods(http.MethodGet).Subrouter()
+	m.HandleFunc("/home", handlers.Home)
 	m.Use(middleware.VerifyJwt)
 	srv := &http.Server{
 		Addr:         ":9090",
@@ -33,23 +34,19 @@ func main() {
 	}
 
 	go func() {
-		log.Println("Server starting on port 9090")
 		err := srv.ListenAndServe()
 		if err != nil {
-			log.Fatal(err)
+			l.Fatal(err)
 		}
 	}()
-	log.Println("Service shutting down...")
 	sigChan := make(chan os.Signal)
 	signal.Notify(sigChan, syscall.SIGINT)
 	signal.Notify(sigChan, syscall.SIGTERM)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
+	sig := <-sigChan
+	l.Println("Graceful shutdown", sig)
 
-	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatal(err)
-	}
-	log.Println("Server stopped")
+	tc, _ := context.WithTimeout(context.Background(), 30*time.Second)
+	srv.Shutdown(tc)
 
 }
